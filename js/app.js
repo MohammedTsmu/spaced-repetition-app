@@ -9,6 +9,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const notificationSound = document.getElementById('notification-sound');
     const notificationsContainer = document.getElementById('notifications');
     const statsChartCanvas = document.getElementById('stats-chart').getContext('2d');
+    const themeSelect = document.getElementById('theme-select');
     let statsChart;
 
     const dbPromise = idb.openDB('subjects-db', 1, {
@@ -238,6 +239,18 @@ document.addEventListener('DOMContentLoaded', () => {
         };
         reader.readAsText(file);
     });
+
+    // إدارة السمات
+    themeSelect.addEventListener('change', (e) => {
+        const theme = e.target.value;
+        document.body.className = theme;
+        localStorage.setItem('theme', theme);
+    });
+
+    // تحميل السمة المحفوظة
+    const savedTheme = localStorage.getItem('theme') || 'light';
+    document.body.className = savedTheme;
+    themeSelect.value = savedTheme;
 
     async function init() {
         const subjects = await getSubjects();
