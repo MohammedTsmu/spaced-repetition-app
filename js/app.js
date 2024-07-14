@@ -10,6 +10,9 @@ document.addEventListener('DOMContentLoaded', () => {
     const notificationsContainer = document.getElementById('notifications');
     const statsChartCanvas = document.getElementById('stats-chart').getContext('2d');
     const themeSelect = document.getElementById('theme-select');
+    const homeTotalSubjects = document.getElementById('home-total-subjects');
+    const homeReviewedSubjects = document.getElementById('home-reviewed-subjects');
+    const homeRemainingSubjects = document.getElementById('home-remaining-subjects');
     let statsChart;
 
     const dbPromise = idb.openDB('subjects-db', 1, {
@@ -71,6 +74,10 @@ document.addEventListener('DOMContentLoaded', () => {
         document.getElementById('total-subjects').textContent = `إجمالي المواضيع: ${totalSubjects}`;
         document.getElementById('reviewed-subjects').textContent = `المواضيع التي تم مراجعتها: ${reviewedSubjects}`;
         document.getElementById('remaining-subjects').textContent = `المواضيع المتبقية: ${remainingSubjects}`;
+
+        homeTotalSubjects.textContent = totalSubjects;
+        homeReviewedSubjects.textContent = reviewedSubjects;
+        homeRemainingSubjects.textContent = remainingSubjects;
 
         updateChart(totalSubjects, reviewedSubjects, remainingSubjects);
     }
