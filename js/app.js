@@ -9,11 +9,13 @@ document.addEventListener('DOMContentLoaded', () => {
     const notificationSound = document.getElementById('notification-sound');
     const notificationsContainer = document.getElementById('notifications');
     const statsChartCanvas = document.getElementById('stats-chart').getContext('2d');
+    const pieChartCanvas = document.getElementById('pie-chart').getContext('2d');
     const themeSelect = document.getElementById('theme-select');
     const homeTotalSubjects = document.getElementById('home-total-subjects');
     const homeReviewedSubjects = document.getElementById('home-reviewed-subjects');
     const homeRemainingSubjects = document.getElementById('home-remaining-subjects');
     let statsChart;
+    let pieChart;
 
     const dbPromise = idb.openDB('subjects-db', 1, {
         upgrade(db) {
@@ -57,8 +59,8 @@ document.addEventListener('DOMContentLoaded', () => {
             li.innerHTML = `
                 ${subject.name} - ${subject.details} - الموعد التالي: ${new Date(subject.nextReview).toLocaleDateString()}
                 <div class="review-buttons">
-                    <button class="review-button" data-id="${subject.id}" data-score="1">جيد</button>
-                    <button class="review-button" data-id="${subject.id}" data-score="2">ممتاز</button>
+                    <button class="review-button" data-id="${subject.id}" data-score="1"><i class="fas fa-check"></i> جيد</button>
+                    <button class="review-button" data-id="${subject.id}" data-score="2"><i class="fas fa-star"></i> ممتاز</button>
                 </div>
             `;
             subjectsList.appendChild(li);
@@ -79,10 +81,11 @@ document.addEventListener('DOMContentLoaded', () => {
         homeReviewedSubjects.textContent = reviewedSubjects;
         homeRemainingSubjects.textContent = remainingSubjects;
 
-        updateChart(totalSubjects, reviewedSubjects, remainingSubjects);
+        updateBarChart(totalSubjects, reviewedSubjects, remainingSubjects);
+        updatePieChart(totalSubjects, reviewedSubjects, remainingSubjects);
     }
 
-    function updateChart(total, reviewed, remaining) {
+    function updateBarChart(total, reviewed, remaining) {
         if (statsChart) {
             statsChart.destroy();
         }
@@ -111,6 +114,51 @@ document.addEventListener('DOMContentLoaded', () => {
                 scales: {
                     y: {
                         beginAtZero: true
+                    }
+                }
+            }
+        });
+    }
+
+    function updatePieChart(total, reviewed, remaining) {
+        if (pieChart) {
+            pieChart.destroy();
+        }
+
+        pieChart = new Chart(pieChartCanvas, {
+            type: 'pie',
+            data: {
+                labels: ['إجمالي المواضيع', 'المواضيع التي تم مراجعتها', 'المواضيع المتبقية'],
+                datasets: [{
+                    label: 'الإحصائيات',
+                    data: [total, reviewed, remaining],
+                    backgroundColor: [
+                        'rgba(75, 192, 192, 0.2)',
+                        'rgba(54, 162, 235, 0.2)',
+                        'rgba(255, 206, 86, 0.2)'
+                    ],
+                    borderColor: [
+                        'rgba(75, 192, 192, 1)',
+                        'rgba(54, 162, 235, 1)',
+                        'rgba(255, 206, 86, 1)'
+                    ],
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: {
+                        position: 'top',
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function (tooltipItem) {
+                                const label = tooltipItem.label || '';
+                                const value = tooltipItem.raw;
+                                return `${label}: ${value}`;
+                            }
+                        }
                     }
                 }
             }
