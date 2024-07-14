@@ -1,10 +1,10 @@
 <!DOCTYPE html>
-<html lang="ar">
+<html lang="en">
 
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>تطبيق التكرار المتباعد</title>
+    <title>Spaced Repetition App</title>
     <link rel="stylesheet" href="css/styles.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <script src="https://unpkg.com/idb@5.0.8/build/iife/index-min.js"></script>
@@ -13,7 +13,7 @@
 
 <body>
     <div class="sidebar">
-        <h1>تطبيق التكرار المتباعد</h1>
+        <h1>Spaced Repetition App</h1>
         <nav>
             <ul>
                 <li><a href="#" data-section="home"><i class="fas fa-home"></i> الصفحة الرئيسية</a></li>
@@ -35,15 +35,6 @@
                             id="home-reviewed-subjects">0</span></p>
                     <p><i class="fas fa-clock"></i> المواضيع المتبقية: <span id="home-remaining-subjects">0</span></p>
                 </div>
-                <div id="home-tips">
-                    <h3>نصائح لاستخدام التطبيق:</h3>
-                    <ul>
-                        <li>أضف مواضيعك باستخدام النموذج في قسم المواضيع.</li>
-                        <li>قم بمراجعة المواضيع بناءً على الجدول الزمني المقترح.</li>
-                        <li>استخدم قسم الإحصائيات لمتابعة تقدمك.</li>
-                        <li>لا تنسى إجراء النسخ الاحتياطي للبيانات واستيرادها عند الحاجة.</li>
-                    </ul>
-                </div>
             </div>
         </section>
         <section id="subjects" class="section">
@@ -62,7 +53,7 @@
             <ul id="subjects-list"></ul>
         </section>
         <section id="stats" class="section">
-            <h2>إحصائيات الأداء</h2>
+            <h2>إحصائيات</h2>
             <p id="total-subjects">إجمالي المواضيع: 0</p>
             <p id="reviewed-subjects">المواضيع التي تم مراجعتها: 0</p>
             <p id="remaining-subjects">المواضيع المتبقية: 0</p>
@@ -73,11 +64,17 @@
             <h2>النسخ الاحتياطي واستيراد البيانات</h2>
             <button id="backup-button"><i class="fas fa-download"></i> نسخ احتياطي للبيانات</button>
             <input type="file" id="import-file" accept=".json">
-            <h2>تغيير السمات</h2>
+            <h2>تغيير السمة</h2>
             <label for="theme-select">اختر السمة:</label>
             <select id="theme-select">
                 <option value="light">فاتح</option>
                 <option value="dark">داكن</option>
+            </select>
+            <h2>تغيير اللغة</h2>
+            <label for="language-select">اختر اللغة:</label>
+            <select id="language-select">
+                <option value="en">الإنجليزية</option>
+                <option value="ar">العربية</option>
             </select>
         </section>
     </main>
