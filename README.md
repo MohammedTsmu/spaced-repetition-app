@@ -24,5 +24,5 @@ Spaced Repetition App is a web-based application designed to help users manage t
 
 1. Clone the repository:
    ```bash
-   git clone https://github.com/yourusername/spaced-repetition-app.git
+   git clone https://github.com/MohammedTsmu/spaced-repetition-app.git
    ```
