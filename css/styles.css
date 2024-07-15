@@ -7,6 +7,15 @@ body {
   display: flex;
 }
 
+body.dark {
+  background-color: #333;
+  color: #f4f4f4;
+}
+
+body.rtl {
+  direction: rtl;
+}
+
 .sidebar {
   width: 250px;
   background-color: #2196f3;
@@ -15,6 +24,15 @@ body {
   box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
   position: fixed;
   height: 100%;
+}
+
+body.rtl .sidebar {
+  left: auto;
+  right: 0;
+}
+
+body.dark .sidebar {
+  background-color: #444;
 }
 
 .sidebar h1 {
@@ -46,9 +64,28 @@ body {
   background-color: #1976d2;
 }
 
+.sidebar nav ul li a i {
+  margin-right: 0.5em;
+}
+
+body.rtl .sidebar nav ul li a i {
+  margin-left: 0.5em;
+  margin-right: 0;
+}
+
+body.dark .sidebar nav ul li a:hover {
+  background-color: #555;
+}
+
 main {
   margin-left: 270px;
   padding: 2em;
+  width: calc(100% - 270px);
+}
+
+body.rtl main {
+  margin-left: 0;
+  margin-right: 270px;
   width: calc(100% - 270px);
 }
 
@@ -63,12 +100,21 @@ footer {
   box-shadow: 0 -2px 4px rgba(0, 0, 0, 0.1);
 }
 
+body.dark footer {
+  background-color: #444;
+}
+
 form {
   background-color: #fff;
   padding: 1em;
   border-radius: 5px;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   margin-bottom: 2em;
+}
+
+body.dark form {
+  background-color: #555;
+  color: #f4f4f4;
 }
 
 form label {
@@ -85,6 +131,12 @@ form input {
   border-radius: 5px;
 }
 
+body.dark form input {
+  background-color: #444;
+  color: #f4f4f4;
+  border: 1px solid #666;
+}
+
 form button {
   background-color: #2196f3;
   color: #fff;
@@ -95,8 +147,21 @@ form button {
   transition: background-color 0.3s ease;
 }
 
+form button i {
+  margin-right: 0.5em;
+}
+
+body.rtl form button i {
+  margin-left: 0.5em;
+  margin-right: 0;
+}
+
 form button:hover {
   background-color: #1976d2;
+}
+
+body.dark form button {
+  background-color: #555;
 }
 
 #subjects-list ul {
@@ -114,6 +179,10 @@ form button:hover {
   display: flex;
   justify-content: space-between;
   align-items: center;
+}
+
+body.dark #subjects-list li {
+  background-color: #555;
 }
 
 .review-buttons {
@@ -138,12 +207,21 @@ form button:hover {
   background-color: #1976d2;
 }
 
+body.dark .review-button {
+  background-color: #555;
+}
+
 .notifications {
   position: fixed;
   top: 1em;
   right: 1em;
   width: 300px;
   z-index: 1000;
+}
+
+body.rtl .notifications {
+  right: auto;
+  left: 1em;
 }
 
 .notification {

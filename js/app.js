@@ -1,5 +1,5 @@
 document.addEventListener('DOMContentLoaded', () => {
-    console.log('تطبيق التكرار المتباعد جاهز!');
+    console.log('Spaced Repetition App Ready!');
 
     const form = document.getElementById('subject-form');
     const subjectsList = document.getElementById('subjects-list');
@@ -9,7 +9,17 @@ document.addEventListener('DOMContentLoaded', () => {
     const notificationSound = document.getElementById('notification-sound');
     const notificationsContainer = document.getElementById('notifications');
     const statsChartCanvas = document.getElementById('stats-chart').getContext('2d');
+    const pieChartCanvas = document.getElementById('pie-chart').getContext('2d');
+    const themeSelect = document.getElementById('theme-select');
+    const languageSelect = document.getElementById('language-select');
+    const homeTotalSubjects = document.getElementById('home-total-subjects');
+    const homeReviewedSubjects = document.getElementById('home-reviewed-subjects');
+    const homeRemainingSubjects = document.getElementById('home-remaining-subjects');
     let statsChart;
+    let pieChart;
+
+    // تعريف اللغة الحالية في البداية
+    let currentLanguage;
 
     const dbPromise = idb.openDB('subjects-db', 1, {
         upgrade(db) {
@@ -19,6 +29,77 @@ document.addEventListener('DOMContentLoaded', () => {
             });
         }
     });
+
+    const translations = {
+        en: {
+            appTitle: "Spaced Repetition App",
+            home: "Home",
+            subjects: "Subjects",
+            stats: "Stats",
+            settings: "Settings",
+            homeTitle: "Home",
+            homeWelcome: "Welcome to the Spaced Repetition App! Use this app to manage your subjects and schedule their reviews based on the spaced repetition principle.",
+            totalSubjects: "Total Subjects:",
+            reviewedSubjects: "Reviewed Subjects:",
+            remainingSubjects: "Remaining Subjects:",
+            tipsTitle: "Tips for using the app:",
+            tip1: "Add your subjects using the form in the Subjects section.",
+            tip2: "Review the subjects based on the suggested schedule.",
+            tip3: "Use the Stats section to track your progress.",
+            tip4: "Don't forget to backup and import your data when needed.",
+            addSubjectTitle: "Add a New Subject",
+            subjectLabel: "Subject:",
+            detailsLabel: "Details:",
+            addButton: "Add Subject",
+            subjectsTitle: "Subjects",
+            searchPlaceholder: "Search for a subject...",
+            statsTitle: "Performance Stats",
+            backupTitle: "Backup and Import Data",
+            backupButton: "Backup Data",
+            themeTitle: "Change Theme",
+            themeLabel: "Choose Theme:",
+            lightTheme: "Light",
+            darkTheme: "Dark",
+            languageTitle: "Change Language",
+            languageLabel: "Choose Language:",
+            english: "English",
+            arabic: "العربية"
+        },
+        ar: {
+            appTitle: "تطبيق التكرار المتباعد",
+            home: "الصفحة الرئيسية",
+            subjects: "المواضيع",
+            stats: "إحصائيات",
+            settings: "الإعدادات",
+            homeTitle: "الصفحة الرئيسية",
+            homeWelcome: "مرحبًا بك في تطبيق التكرار المتباعد! يمكنك استخدام هذا التطبيق لإدارة مواضيعك وجدولة مواعيد مراجعتها بناءً على مبدأ التكرار المتباعد.",
+            totalSubjects: "إجمالي المواضيع:",
+            reviewedSubjects: "المواضيع التي تم مراجعتها:",
+            remainingSubjects: "المواضيع المتبقية:",
+            tipsTitle: "نصائح لاستخدام التطبيق:",
+            tip1: "أضف مواضيعك باستخدام النموذج في قسم المواضيع.",
+            tip2: "قم بمراجعة المواضيع بناءً على الجدول الزمني المقترح.",
+            tip3: "استخدم قسم الإحصائيات لمتابعة تقدمك.",
+            tip4: "لا تنسى إجراء النسخ الاحتياطي للبيانات واستيرادها عند الحاجة.",
+            addSubjectTitle: "إضافة موضوع جديد",
+            subjectLabel: "الموضوع:",
+            detailsLabel: "التفاصيل:",
+            addButton: "إضافة الموضوع",
+            subjectsTitle: "المواضيع",
+            searchPlaceholder: "ابحث عن موضوع...",
+            statsTitle: "إحصائيات الأداء",
+            backupTitle: "النسخ الاحتياطي واستيراد البيانات",
+            backupButton: "نسخ احتياطي للبيانات",
+            themeTitle: "تغيير السمات",
+            themeLabel: "اختر السمة:",
+            lightTheme: "فاتح",
+            darkTheme: "داكن",
+            languageTitle: "تغيير اللغة",
+            languageLabel: "اختر اللغة:",
+            english: "الإنجليزية",
+            arabic: "العربية"
+        }
+    };
 
     async function getSubjects() {
         const db = await dbPromise;
@@ -53,8 +134,8 @@ document.addEventListener('DOMContentLoaded', () => {
             li.innerHTML = `
                 ${subject.name} - ${subject.details} - الموعد التالي: ${new Date(subject.nextReview).toLocaleDateString()}
                 <div class="review-buttons">
-                    <button class="review-button" data-id="${subject.id}" data-score="1">جيد</button>
-                    <button class="review-button" data-id="${subject.id}" data-score="2">ممتاز</button>
+                    <button class="review-button" data-id="${subject.id}" data-score="1"><i class="fas fa-check"></i> <span data-lang="good">Good</span></button>
+                    <button class="review-button" data-id="${subject.id}" data-score="2"><i class="fas fa-star"></i> <span data-lang="excellent">Excellent</span></button>
                 </div>
             `;
             subjectsList.appendChild(li);
@@ -67,14 +148,19 @@ document.addEventListener('DOMContentLoaded', () => {
         const reviewedSubjects = subjects.filter(subject => subject.repeatCount > 0).length;
         const remainingSubjects = totalSubjects - reviewedSubjects;
 
-        document.getElementById('total-subjects').textContent = `إجمالي المواضيع: ${totalSubjects}`;
-        document.getElementById('reviewed-subjects').textContent = `المواضيع التي تم مراجعتها: ${reviewedSubjects}`;
-        document.getElementById('remaining-subjects').textContent = `المواضيع المتبقية: ${remainingSubjects}`;
+        document.getElementById('total-subjects').textContent = `${translations[currentLanguage].totalSubjects} ${totalSubjects}`;
+        document.getElementById('reviewed-subjects').textContent = `${translations[currentLanguage].reviewedSubjects} ${reviewedSubjects}`;
+        document.getElementById('remaining-subjects').textContent = `${translations[currentLanguage].remainingSubjects} ${remainingSubjects}`;
 
-        updateChart(totalSubjects, reviewedSubjects, remainingSubjects);
+        homeTotalSubjects.textContent = totalSubjects;
+        homeReviewedSubjects.textContent = reviewedSubjects;
+        homeRemainingSubjects.textContent = remainingSubjects;
+
+        updateBarChart(totalSubjects, reviewedSubjects, remainingSubjects);
+        updatePieChart(totalSubjects, reviewedSubjects, remainingSubjects);
     }
 
-    function updateChart(total, reviewed, remaining) {
+    function updateBarChart(total, reviewed, remaining) {
         if (statsChart) {
             statsChart.destroy();
         }
@@ -82,9 +168,13 @@ document.addEventListener('DOMContentLoaded', () => {
         statsChart = new Chart(statsChartCanvas, {
             type: 'bar',
             data: {
-                labels: ['إجمالي المواضيع', 'المواضيع التي تم مراجعتها', 'المواضيع المتبقية'],
+                labels: [
+                    translations[currentLanguage].totalSubjects,
+                    translations[currentLanguage].reviewedSubjects,
+                    translations[currentLanguage].remainingSubjects
+                ],
                 datasets: [{
-                    label: 'الإحصائيات',
+                    label: translations[currentLanguage].statsTitle,
                     data: [total, reviewed, remaining],
                     backgroundColor: [
                         'rgba(75, 192, 192, 0.2)',
@@ -109,6 +199,55 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
+    function updatePieChart(total, reviewed, remaining) {
+        if (pieChart) {
+            pieChart.destroy();
+        }
+
+        pieChart = new Chart(pieChartCanvas, {
+            type: 'pie',
+            data: {
+                labels: [
+                    translations[currentLanguage].totalSubjects,
+                    translations[currentLanguage].reviewedSubjects,
+                    translations[currentLanguage].remainingSubjects
+                ],
+                datasets: [{
+                    label: translations[currentLanguage].statsTitle,
+                    data: [total, reviewed, remaining],
+                    backgroundColor: [
+                        'rgba(75, 192, 192, 0.2)',
+                        'rgba(54, 162, 235, 0.2)',
+                        'rgba(255, 206, 86, 0.2)'
+                    ],
+                    borderColor: [
+                        'rgba(75, 192, 192, 1)',
+                        'rgba(54, 162, 235, 1)',
+                        'rgba(255, 206, 86, 1)'
+                    ],
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: {
+                        position: 'top',
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function (tooltipItem) {
+                                const label = tooltipItem.label || '';
+                                const value = tooltipItem.raw;
+                                return `${label}: ${value}`;
+                            }
+                        }
+                    }
+                }
+            }
+        });
+    }
+
     form.addEventListener('submit', async (e) => {
         e.preventDefault();
 
@@ -125,7 +264,7 @@ document.addEventListener('DOMContentLoaded', () => {
         await updateStats();
 
         form.reset();
-        showNotification('تم إضافة الموضوع بنجاح!', 'success');
+        showNotification(translations[currentLanguage].addButton, 'success');
     });
 
     function showNotification(message, type = 'info') {
@@ -157,7 +296,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const subjects = await getSubjects();
         subjects.forEach(async (subject) => {
             if (now >= subject.nextReview) {
-                showNotification(`حان وقت مراجعة الموضوع: ${subject.name}`, 'info');
+                showNotification(`${translations[currentLanguage].reviewSubject}: ${subject.name}`, 'info');
             }
         });
     }
@@ -183,10 +322,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
             if (subject.repeatCount >= 5) {
                 await deleteSubject(id);
-                showNotification(`تم حذف الموضوع: ${subject.name} بعد إكمال جميع التكرارات.`, 'success');
+                showNotification(`${translations[currentLanguage].deleteSubject}: ${subject.name}`, 'success');
             } else {
                 await updateSubject(id, { nextReview: subject.nextReview, repeatCount: subject.repeatCount });
-                showNotification(`تم تحديث الموضوع: ${subject.name}`, 'success');
+                showNotification(`${translations[currentLanguage].updateSubject}: ${subject.name}`, 'success');
             }
 
             const updatedSubjects = await getSubjects();
@@ -215,7 +354,7 @@ document.addEventListener('DOMContentLoaded', () => {
         a.download = 'subjects_backup.json';
         a.click();
         URL.revokeObjectURL(url);
-        showNotification('تم النسخ الاحتياطي للبيانات بنجاح!', 'success');
+        showNotification(translations[currentLanguage].backupSuccess, 'success');
     });
 
     importFile.addEventListener('change', async (e) => {
@@ -234,10 +373,51 @@ document.addEventListener('DOMContentLoaded', () => {
             const subjects = await getSubjects();
             await renderSubjects(subjects);
             await updateStats();
-            showNotification('تم استيراد البيانات بنجاح!', 'success');
+            showNotification(translations[currentLanguage].importSuccess, 'success');
         };
         reader.readAsText(file);
     });
+
+    // إدارة السمات
+    themeSelect.addEventListener('change', (e) => {
+        const theme = e.target.value;
+        document.body.className = theme;
+        localStorage.setItem('theme', theme);
+    });
+
+    // تحميل السمة المحفوظة
+    const savedTheme = localStorage.getItem('theme') || 'light';
+    document.body.className = savedTheme;
+    themeSelect.value = savedTheme;
+
+    // إدارة اللغة
+    languageSelect.addEventListener('change', (e) => {
+        const lang = e.target.value;
+        setLanguage(lang);
+        localStorage.setItem('language', lang);
+    });
+
+    // تحميل اللغة المحفوظة
+    const savedLanguage = localStorage.getItem('language') || 'en';
+    setLanguage(savedLanguage);
+    languageSelect.value = savedLanguage;
+
+    function setLanguage(lang) {
+        const elements = document.querySelectorAll('[data-lang]');
+        elements.forEach(el => {
+            const key = el.getAttribute('data-lang');
+            el.textContent = translations[lang][key];
+        });
+        if (lang === 'ar') {
+            document.body.classList.add('rtl');
+        } else {
+            document.body.classList.remove('rtl');
+        }
+        currentLanguage = lang;
+    }
+
+    // تعريف اللغة الحالية بعد تحميلها من التخزين المحلي
+    currentLanguage = savedLanguage;
 
     async function init() {
         const subjects = await getSubjects();
@@ -251,9 +431,11 @@ document.addEventListener('DOMContentLoaded', () => {
     document.querySelectorAll('nav ul li a').forEach(link => {
         link.addEventListener('click', (e) => {
             e.preventDefault();
-            const section = e.target.dataset.section;
-            document.querySelectorAll('.section').forEach(sec => sec.classList.remove('active'));
-            document.getElementById(section).classList.add('active');
+            const section = e.target.closest('a').dataset.section;
+            if (section) {
+                document.querySelectorAll('.section').forEach(sec => sec.classList.remove('active'));
+                document.getElementById(section).classList.add('active');
+            }
         });
     });
 });
